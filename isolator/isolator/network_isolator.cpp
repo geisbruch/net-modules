@@ -267,7 +267,7 @@ process::Future<Option<ContainerLaunchInfo>> NetworkIsolatorProcess::prepare(
 {
   LOG(INFO) << "NetworkIsolator::prepare for container: " << containerId;
 
-  const ExecutorInfo executorInfo = containerConfig.executorinfo();
+  const ExecutorInfo executorInfo = containerConfig.executor_info();
   if (!executorInfo.has_container()) {
     LOG(INFO) << "NetworkIsolator::prepare Ignoring request as "
               << "executorInfo.container is missing for container: "
@@ -288,17 +288,8 @@ process::Future<Option<ContainerLaunchInfo>> NetworkIsolatorProcess::prepare(
   }
 
   NetworkInfo networkInfo = executorInfo.container().network_infos(0);
-
-  if (networkInfo.has_protocol()) {
-    return Failure(
-      "NetworkIsolator: NetworkInfo.protocol is deprecated and unsupported.");
-  }
-  if (networkInfo.has_ip_address()) {
-    return Failure(
-      "NetworkIsolator: NetworkInfo.ip_address is deprecated and"
-      " unsupported.");
-  }
-
+ 
+ 
   string uid = UUID::random().toString();
 
   // Two IPAM commands:
@@ -398,7 +389,7 @@ process::Future<Option<ContainerLaunchInfo>> NetworkIsolatorProcess::prepare(
   labels.CopyFrom(networkInfo.labels());
 
   ContainerLaunchInfo launchInfo;
-  launchInfo.set_namespaces(CLONE_NEWNET);
+  launchInfo.add_clone_namespaces(CLONE_NEWNET);
 
   Environment::Variable* variable =
     launchInfo.mutable_environment()->add_variables();
